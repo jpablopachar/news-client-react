@@ -3,6 +3,8 @@ import { useContext, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { baseUrl } from '../../config/config'
+import { ROUTES } from '../../constants/routes'
+import { ACTION_TYPES } from '../../context/actionTypes'
 import storeContext from '../../context/storeContext'
 
 const Login = () => {
@@ -36,9 +38,9 @@ const Login = () => {
 
       toast.success(data.message)
 
-      dispatch({ type: 'login_success', payload: { token: data.token } })
+      dispatch({ type: ACTION_TYPES.LOGIN_SUCCESS, payload: { token: data.token } })
 
-      navigate('/dashboard')
+      navigate(ROUTES.DASHBOARD)
     } catch (error) {
       setLoader(false)
 

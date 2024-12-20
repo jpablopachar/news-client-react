@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useContext } from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
+import { ROUTES } from '../constants/routes'
 import storeContext from '../context/storeContext'
 
 const ProtectRole = ({ role }) => {
@@ -9,7 +10,7 @@ const ProtectRole = ({ role }) => {
   return store.userInfo?.role === role ? (
     <Outlet />
   ) : (
-    <Navigate to="/dashboard/unable-access" />
+    <Navigate to={ROUTES.DASHBOARD_UNABLE_ACCESS} />
   )
 }
 
