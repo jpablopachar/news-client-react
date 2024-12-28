@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 // import profile from '../../assets/profile.png'
-import { base_url } from '../../config/config'
+import { baseUrl } from '../../config/config'
 import { ROUTES } from '../../constants/routes'
 import storeContext from '../../context/storeContext'
 
@@ -17,7 +17,7 @@ const Writers = () => {
 
   const get_writers = async () => {
     try {
-      const { data } = await axios.get(`${base_url}/api/news/writers`, {
+      const { data } = await axios.get(`${baseUrl}/api/news/writers`, {
         headers: {
           Authorization: `Bearer ${store.token}`,
         },
@@ -39,7 +39,7 @@ const Writers = () => {
     setLoading(true)
 
     try {
-      await axios.delete(`${base_url}/api/delete/writer/${id}`, {
+      await axios.delete(`${baseUrl}/api/delete/writer/${id}`, {
         headers: {
           Authorization: `Bearer ${store.token}`,
         },
