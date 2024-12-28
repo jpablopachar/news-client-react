@@ -5,6 +5,7 @@ export const ROUTES = {
   DASHBOARD_WRITERS: '/dashboard/writers',
   DASHBOARD_WRITER: '/dashboard/writer',
   DASHBOARD_WRITER_ADD: '/dashboard/writer/add',
+  DASHBOARD_WRITER_EDIT: '/dashboard/writer/edit',
   DASHBOARD_NEWS_CREATE: '/dashboard/news/create',
   DASHBOARD_NEWS: '/dashboard/news',
   DASHBOARD_PROFILE: '/dashboard/profile',
