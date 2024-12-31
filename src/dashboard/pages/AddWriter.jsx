@@ -20,8 +20,6 @@ const AddWriter = () => {
     category: '',
   })
 
-  console.log(state)
-
   const inputHandle = (e) => {
     setState({
       ...state,
