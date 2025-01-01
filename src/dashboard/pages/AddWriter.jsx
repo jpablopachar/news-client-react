@@ -3,8 +3,31 @@ import { useContext, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Link, useNavigate } from 'react-router-dom'
 import { baseUrl } from '../../config/config'
+import { WRITER_CATEGORIES } from '../../constants/categories'
 import { ROUTES } from '../../constants/routes'
 import storeContext from '../../context/storeContext'
+import InputField from '../components/InputField'
+import SelectField from '../components/SelectField'
+
+const {
+  EDUCATION,
+  TRAVEL,
+  HEALTH,
+  INTERNATIONAL,
+  SPORTS,
+  TECHNOLOGY,
+  BUSINESS,
+} = WRITER_CATEGORIES
+
+const categories = [
+  EDUCATION,
+  TRAVEL,
+  HEALTH,
+  INTERNATIONAL,
+  SPORTS,
+  TECHNOLOGY,
+  BUSINESS,
+]
 
 const AddWriter = () => {
   const { store } = useContext(storeContext)
@@ -13,41 +36,38 @@ const AddWriter = () => {
 
   const [loader, setLoader] = useState(false)
 
-  const [state, setState] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     category: '',
   })
 
-  const inputHandle = (e) => {
-    setState({
-      ...state,
-      [e.target.name]: e.target.value,
-    })
+  const handleChange = (event) => {
+    const { name, value } = event.target
+
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const submit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    setLoader(true)
 
     try {
-      setLoader(true)
-
-      const { data } = await axios.post(`${baseUrl}/api/writer/add`, state, {
+      const { data } = await axios.post(`${baseUrl}/api/writer/add`, formData, {
         headers: {
           Authorization: `Bearer ${store.token}`,
         },
       })
 
-      setLoader(false)
-
       toast.success(data.message)
 
       navigate(ROUTES.DASHBOARD_WRITERS)
     } catch (error) {
-      setLoader(false)
-
       toast.error(error.response.data.message)
+    } finally {
+      setLoader(false)
     }
   }
   return (
@@ -62,89 +82,57 @@ const AddWriter = () => {
         </Link>
       </div>
       <div className="p-4">
-        <form onSubmit={submit}>
+        <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-x-8 mb-3">
-            <div className="flex flex-col gap-y-2">
-              <label
-                htmlFor="name"
-                className="text-md font-semibold text-gray-600"
-              >
-                Name
-              </label>
-              <input
-                onChange={inputHandle}
-                value={state.name}
-                required
-                type="text"
-                placeholder="Name"
-                name="name"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
-                id="name"
-              />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label
-                htmlFor="name"
-                className="text-md font-semibold text-gray-600"
-              >
-                Category
-              </label>
-              <select
-                onChange={inputHandle}
-                value={state.category}
-                required
-                name="category"
-                id="category"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
-              >
-                <option value="">--- Select Category ---</option>
-                <option value="Education">Education</option>
-                <option value="Travel">Travel</option>
-                <option value="Health">Health</option>
-                <option value="International">International</option>
-                <option value="Sports">Sports</option>
-                <option value="Technology">Technology</option>
-                <option value="Business">Business</option>
-              </select>
-            </div>
+            <InputField
+              containerClass="flex flex-col gap-y-2"
+              label="Name"
+              labelClass="text-md font-semibold text-gray-600"
+              inputClass="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Name"
+              required={true}
+            />
+            <SelectField
+              containerClass="flex flex-col gap-y-2"
+              label="Category"
+              labelClass="text-md font-semibold text-gray-600"
+              selectClass="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              options={categories}
+              required={true}
+            />
           </div>
           <div className="grid grid-cols-2 gap-x-8 mb-3">
-            <div className="flex flex-col gap-y-2">
-              <label
-                htmlFor="email"
-                className="text-md font-semibold text-gray-600"
-              >
-                Email
-              </label>
-              <input
-                onChange={inputHandle}
-                value={state.email}
-                required
-                type="email"
-                placeholder="Email"
-                name="email"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
-                id="email"
-              />
-            </div>
-            <div className="flex flex-col gap-y-2">
-              <label
-                htmlFor="password"
-                className="text-md font-semibold text-gray-600"
-              >
-                Password
-              </label>
-              <input
-                onChange={inputHandle}
-                value={state.password}
-                required
-                type="password"
-                placeholder="Password"
-                name="password"
-                className="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
-                id="password"
-              />
-            </div>
+            <InputField
+              containerClass="flex flex-col gap-y-2"
+              label="Email"
+              labelClass="text-md font-semibold text-gray-600"
+              inputClass="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required={true}
+            />
+            <InputField
+              containerClass="flex flex-col gap-y-2"
+              label="Password"
+              labelClass="text-md font-semibold text-gray-600"
+              inputClass="px-3 py-2 rounded-md outline-0 border border-gray-300 focus:border-blue-500 h-10"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              required={true}
+            />
           </div>
           <div className="mt-4">
             <button
