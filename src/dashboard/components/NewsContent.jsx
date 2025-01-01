@@ -1,14 +1,12 @@
-import axios from 'axios'
 import { convert } from 'html-to-text'
 import { useContext, useEffect, useState } from 'react'
-import { toast } from 'react-hot-toast'
 import { FaEdit, FaEye, FaTrashAlt } from 'react-icons/fa'
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
 import { Link } from 'react-router-dom'
-import { baseUrl } from '../../config/config'
 import { NEWS_STATUS } from '../../constants/options'
 import storeContext from '../../context/storeContext'
 import SelectField from './SelectField'
+import { useNews } from './hooks/useNews'
 
 const { PENDING, ACTIVE, DEACTIVE } = NEWS_STATUS
 
@@ -17,128 +15,49 @@ const newsOptions = ['5', '10', '15', '20']
 
 const NewsContent = () => {
   const { store } = useContext(storeContext)
+  const {
+    news,
+    allNews,
+    res,
+    fetchNews,
+    handleDeleteNews,
+    handleUpdateStatus,
+    setNews,
+  } = useNews(store.token)
 
-  const [news, setNews] = useState([])
-  const [all_news, set_all_news] = useState([])
   const [parPage, setParPage] = useState(5)
   const [pages, setPages] = useState(0)
   const [page, setPage] = useState(1)
-  const [res, setRes] = useState({
-    id: '',
-    loader: false,
-  })
-
-  const getNews = async () => {
-    try {
-      const { data } = await axios.get(`${baseUrl}/api/news`, {
-        headers: {
-          Authorization: `Bearer ${store.token}`,
-        },
-      })
-
-      set_all_news(data.news)
-      setNews(data.news)
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
   useEffect(() => {
-    getNews()
-  }, [])
+    fetchNews()
+  }, [fetchNews])
 
   useEffect(() => {
     if (news.length > 0) {
-      const calculate_page = Math.ceil(news.length / parPage)
-
-      setPages(calculate_page)
+      setPages(Math.ceil(news.length / parPage))
     }
   }, [news, parPage])
 
-  const deleteNews = async (newsId) => {
-    if (window.confirm('Are you sure to delete?')) {
-      try {
-        const { data } = await axios.delete(
-          `${baseUrl}/api/news/delete/${newsId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${store.token}`,
-            },
-          }
-        )
+  const handleSearchNews = (event) => {
+    const query = event.target.value.toLowerCase()
 
-        toast.success(data.message)
-
-        getNews()
-      } catch (error) {
-        console.log(error)
-      }
-    }
-  }
-
-  const searchNews = (e) => {
-    const tempNews = all_news.filter(
-      (n) => n.title.toLowerCase().indexOf(e.target.value.toLowerCase()) > -1
-    )
-
-    setNews(tempNews)
+    setNews(allNews.filter((n) => n.title.toLowerCase().includes(query)))
     setPage(1)
-    setParPage(5)
   }
 
-  const typeFilter = (e) => {
-    if (e.target.value === '') {
-      setNews(all_news)
-      setPage(1)
-      setParPage(5)
-    } else {
-      const tempNews = all_news.filter((n) => n.status === e.target.value)
+  const handleFilterByStatus = (event) => {
+    const status = event.target.value
 
-      setNews(tempNews)
-      setPage(1)
-      setParPage(5)
-    }
+    setNews(status ? allNews.filter((n) => n.status === status) : allNews)
+    setPage(1)
   }
 
-  const updateStatus = async (status, news_id) => {
-    try {
-      setRes({
-        id: news_id,
-        loader: true,
-      })
-
-      const { data } = await axios.put(
-        `${baseUrl}/api/news/status-update/${news_id}`,
-        { status },
-        {
-          headers: {
-            Authorization: `Bearer ${store.token}`,
-          },
-        }
-      )
-
-      setRes({
-        id: '',
-        loader: false,
-      })
-
-      toast.success(data.message)
-
-      getNews()
-    } catch (error) {
-      setRes({
-        id: '',
-        loader: false,
-      })
-
-      console.log(error)
-    }
-  }
   return (
     <div className="bg-gray-50 min-h-screen p-6">
       <div className="flex items-center gap-4 mb-6">
         <select
-          onChange={typeFilter}
+          onChange={handleFilterByStatus}
           name="status"
           className="w-48 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400"
         >
@@ -150,7 +69,7 @@ const NewsContent = () => {
           ))}
         </select>
         <input
-          onChange={searchNews}
+          onChange={handleSearchNews}
           type="text"
           placeholder="Search News"
           className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
@@ -192,7 +111,7 @@ const NewsContent = () => {
                     <td className="py-4 px-6">
                       {n.status === 'pending' && (
                         <span
-                          onClick={() => updateStatus('active', n._id)}
+                          onClick={() => handleUpdateStatus('active', n._id)}
                           className="px-2 py-[2px] bg-blue-200 text-blue-800 rounded-md text-xs cursor-pointer"
                         >
                           {res.loader && res.id === n._id
@@ -202,7 +121,7 @@ const NewsContent = () => {
                       )}
                       {n.status === 'active' && (
                         <span
-                          onClick={() => updateStatus('deactive', n._id)}
+                          onClick={() => handleUpdateStatus('deactive', n._id)}
                           className="px-2 py-[2px] bg-green-200 text-green-800 rounded-md text-xs cursor-pointer"
                         >
                           {res.loader && res.id === n._id
@@ -212,7 +131,7 @@ const NewsContent = () => {
                       )}
                       {n.status === 'deactive' && (
                         <span
-                          onClick={() => updateStatus('active', n._id)}
+                          onClick={() => handleUpdateStatus('active', n._id)}
                           className="px-2 py-[2px] bg-red-200 text-red-800 rounded-md text-xs cursor-pointer"
                         >
                           {res.loader && res.id === n._id
@@ -259,7 +178,7 @@ const NewsContent = () => {
                         </>
                       )}
                       <button
-                        onClick={() => deleteNews(n._id)}
+                        onClick={() => handleDeleteNews(n._id)}
                         className="p-2 bg-red-500 text-white rounded hover:bg-red-800"
                       >
                         <FaTrashAlt />
