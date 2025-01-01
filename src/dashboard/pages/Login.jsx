@@ -6,6 +6,7 @@ import { baseUrl } from '../../config/config'
 import { ROUTES } from '../../constants/routes'
 import { ACTION_TYPES } from '../../context/actionTypes'
 import storeContext from '../../context/storeContext'
+import InputField from '../components/InputField'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -38,7 +39,10 @@ const Login = () => {
 
       toast.success(data.message)
 
-      dispatch({ type: ACTION_TYPES.LOGIN_SUCCESS, payload: { token: data.token } })
+      dispatch({
+        type: ACTION_TYPES.LOGIN_SUCCESS,
+        payload: { token: data.token },
+      })
 
       navigate(ROUTES.DASHBOARD)
     } catch (error) {
@@ -59,40 +63,28 @@ const Login = () => {
             />
           </div>
           <form onSubmit={submit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-md font-medium text-gray-700 mb-2"
-              >
-                Email
-              </label>
-              <input
-                value={state.email}
-                onChange={inputHandle}
-                type="email"
-                name="email"
-                id="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-md font-medium text-gray-700 mb-2"
-              >
-                Password
-              </label>
-              <input
-                onChange={inputHandle}
-                value={state.password}
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition"
-              />
-            </div>
+            <InputField
+              label="Email"
+              labelClass="block text-md font-medium text-gray-700 mb-2"
+              inputClass="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition"
+              type="email"
+              name="email"
+              value={state.email}
+              onChange={inputHandle}
+              placeholder="Enter your email"
+              required={true}
+            />
+            <InputField
+              label="Password"
+              labelClass="block text-md font-medium text-gray-700 mb-2"
+              inputClass="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 transition"
+              type="password"
+              name="password"
+              value={state.password}
+              onChange={inputHandle}
+              placeholder="Enter your password"
+              required={true}
+            />
             <div>
               <button
                 type="submit"
