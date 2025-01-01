@@ -6,15 +6,27 @@ import { FaEdit, FaEye, FaTrashAlt } from 'react-icons/fa'
 import { IoIosArrowBack, IoIosArrowForward } from 'react-icons/io'
 import { Link } from 'react-router-dom'
 import { baseUrl } from '../../config/config'
+import { NEWS_STATUS } from '../../constants/options'
 import storeContext from '../../context/storeContext'
+import SelectField from './SelectField'
+
+const { PENDING, ACTIVE, DEACTIVE } = NEWS_STATUS
+
+const options = [PENDING, ACTIVE, DEACTIVE]
+const newsOptions = ['5', '10', '15', '20']
 
 const NewsContent = () => {
   const { store } = useContext(storeContext)
+
   const [news, setNews] = useState([])
   const [all_news, set_all_news] = useState([])
   const [parPage, setParPage] = useState(5)
   const [pages, setPages] = useState(0)
   const [page, setPage] = useState(1)
+  const [res, setRes] = useState({
+    id: '',
+    loader: false,
+  })
 
   const getNews = async () => {
     try {
@@ -88,14 +100,9 @@ const NewsContent = () => {
     }
   }
 
-  const [res, set_res] = useState({
-    id: '',
-    loader: false,
-  })
-
   const updateStatus = async (status, news_id) => {
     try {
-      set_res({
+      setRes({
         id: news_id,
         loader: true,
       })
@@ -110,7 +117,7 @@ const NewsContent = () => {
         }
       )
 
-      set_res({
+      setRes({
         id: '',
         loader: false,
       })
@@ -119,7 +126,7 @@ const NewsContent = () => {
 
       getNews()
     } catch (error) {
-      set_res({
+      setRes({
         id: '',
         loader: false,
       })
@@ -136,9 +143,11 @@ const NewsContent = () => {
           className="w-48 px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400"
         >
           <option value="">--- Select Status ---</option>
-          <option value="pending">Pending</option>
-          <option value="active">Active</option>
-          <option value="deactive">Deactive</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
         </select>
         <input
           onChange={searchNews}
@@ -263,24 +272,21 @@ const NewsContent = () => {
         </table>
       </div>
       <div className="flex justify-between items-center py-6">
-        <div className="flex items-center gap-4">
-          <label className="text-sm font-semibold">News Per Page:</label>
-          <select
-            value={parPage}
-            onChange={(e) => {
-              setParPage(parseInt(e.target.value))
-              setPage(1)
-            }}
-            name="category"
-            id="category"
-            className="px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          >
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="20">20</option>
-          </select>
-        </div>
+        <SelectField
+          containerClass="flex items-center gap-4"
+          label="News Per Page"
+          labelClass="text-sm font-semibold"
+          selectClass="px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          name="category"
+          value={parPage}
+          onChange={(e) => {
+            setParPage(parseInt(e.target.value))
+            setPage(1)
+          }}
+          options={newsOptions}
+          required={false}
+          defaultValue={false}
+        />
         <div className="flex items-center gap-4 text-sm text-gray-600">
           <span className="font-bold">
             {' '}

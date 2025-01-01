@@ -10,6 +10,7 @@ const SelectField = ({
   onChange,
   options,
   required = false,
+  defaultValue = true,
 }) => {
   return (
     <div className={containerClass}>
@@ -24,7 +25,7 @@ const SelectField = ({
         id={name}
         className={selectClass}
       >
-        <option value="">--- Select {label} ---</option>
+        {defaultValue && <option value="">--- Select {label} ---</option>}
         {options.map((option) => (
           <option key={option} value={option}>
             {option}
@@ -43,8 +44,9 @@ SelectField.propTypes = {
   labelClass: PropTypes.string,
   selectClass: PropTypes.string,
   name: PropTypes.string.isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   onChange: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string).isRequired,
   required: PropTypes.bool,
+  defaultValue: PropTypes.bool,
 }

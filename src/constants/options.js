@@ -7,3 +7,9 @@ export const WRITER_CATEGORIES = {
   TECHNOLOGY: 'Technology',
   BUSINESS: 'Business',
 }
+
+export const NEWS_STATUS = {
+  PENDING: 'Pending',
+  ACTIVE: 'Active',
+  DEACTIVE: 'Deactive',
+}
