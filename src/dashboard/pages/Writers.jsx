@@ -1,21 +1,21 @@
+/* eslint-disable no-unused-vars */
+
 import axios from 'axios'
 import { useContext, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { FaEdit, FaTrashAlt } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
-// import profile from '../../assets/profile.png'
 import { baseUrl } from '../../config/config'
 import { ROUTES } from '../../constants/routes'
 import storeContext from '../../context/storeContext'
+import profile from '/images/profile.png'
 
 const Writers = () => {
   const { store } = useContext(storeContext)
   const [writers, setWriters] = useState([])
   const [loading, setLoading] = useState(false)
 
-  console.log(loading)
-
-  const get_writers = async () => {
+  const getWriters = async () => {
     try {
       const { data } = await axios.get(`${baseUrl}/api/news/writers`, {
         headers: {
@@ -25,13 +25,9 @@ const Writers = () => {
 
       setWriters(data.writers)
     } catch (error) {
-      console.log(error)
+      toast.error('Failed to get writers')
     }
   }
-
-  useEffect(() => {
-    get_writers()
-  }, [])
 
   const handleDeleteWriter = async (id) => {
     if (!window.confirm('Are your sure to delete writer?')) return
@@ -47,11 +43,18 @@ const Writers = () => {
 
       toast.success('Writer deleted Successfully')
 
-      get_writers()
-    } catch (error) {
-      console.log(error)
+      await getWriters()
+    } catch {
+      toast.error('Failed to delete writer')
+    } finally {
+      setLoading(false)
     }
   }
+
+  useEffect(() => {
+    getWriters()
+  }, [])
+
   return (
     <div className="bg-white rounded-lg shadow-md">
       <div className="flex justify-between items-center px-6 py-4 border-b border-gray-400">
@@ -84,11 +87,11 @@ const Writers = () => {
                 <td className="py-4 px-6">{item.category}</td>
                 <td className="py-4 px-6">{item.role}</td>
                 <td className="py-4 px-6">
-                  {/* <img
+                  <img
                     className="w-10 h-10 rounded-full object-cover"
                     src={profile}
                     alt="news"
-                  /> */}
+                  />
                 </td>
                 <td className="py-4 px-6">{item.email}</td>
                 <td className="py-4 px-6">
