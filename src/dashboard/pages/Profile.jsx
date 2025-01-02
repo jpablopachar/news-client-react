@@ -8,58 +8,33 @@ import storeContext from './../../context/storeContext'
 const Profile = () => {
   const { store } = useContext(storeContext)
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [image, setImage] = useState(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    image: null,
+    imageUrl: '',
+  })
+
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: '',
+    newPassword: '',
+  })
+
   const [message, setMessage] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [oldPassword, setOldPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
   const [passwordError, setPasswordError] = useState('')
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await axios.get(
-          `${baseUrl}/api/profile/${store.userInfo.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${store.token}`,
-            },
-          }
-        )
-
-        const { name, email, image } = response.data.user
-
-        setName(name)
-        setEmail(email)
-        setImageUrl(image)
-      } catch {
-        setMessage('Faild to load profile data')
-      }
-    }
-
-    fetchProfile()
-  }, [store.userInfo.id, store.token, setName, setEmail])
-
-  const handleFileChange = (e) => {
-    setImage(e.target.files[0])
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const formData = new FormData()
+    const data = new FormData()
 
-    formData.append('name', name)
-    formData.append('email', email)
+    data.append('name', formData.name)
+    data.append('email', formData.email)
 
-    if (image) {
-      formData.append('image', image)
-    }
+    if (formData.image) data.append('image', formData.image)
 
     try {
-      const response = await axios.put(
+      const res = await axios.put(
         `${baseUrl}/api/update-profile/${store.userInfo.id}`,
         formData,
         {
@@ -69,11 +44,9 @@ const Profile = () => {
         }
       )
 
-      setMessage('Profile Updated Successfully')
+      toast.success(res.data.message)
 
-      toast.success(response.data.message)
-
-      setImageUrl(response.data.updatedUser.image)
+      setFormData((prev) => ({ ...prev, imageUrl: res.data.user.image }))
     } catch {
       setMessage('Failed to update profile')
     }
@@ -81,6 +54,8 @@ const Profile = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault()
+
+    const { oldPassword, newPassword } = passwordData
 
     if (!oldPassword || !newPassword) {
       setPasswordError('Please fill in both password fields')
@@ -105,10 +80,9 @@ const Profile = () => {
         }
       )
 
-      toast.success('Password Updaetd successfully')
+      toast.success('Password updated successfully')
 
-      setOldPassword('')
-      setNewPassword('')
+      setPasswordData({ oldPassword: '', newPassword: '' })
       setPasswordError('')
     } catch (error) {
       toast.error(error.response.data.message)
@@ -117,13 +91,52 @@ const Profile = () => {
     }
   }
 
+  const handleInputChange = (event) => {
+    const { name, value } = event.target
+
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleFileChange = (event) => {
+    setFormData((prev) => ({ ...prev, image: event.target.files[0] }))
+  }
+
+  const handlePasswordInputChange = (event) => {
+    const { name, value } = event.target
+
+    setPasswordData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(
+          `${baseUrl}/api/profile/${store.userInfo.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${store.token}`,
+            },
+          }
+        )
+
+        const { name, email, image } = res.data.user
+
+        setFormData((prev) => ({ ...prev, name, email, imageUrl: image }))
+      } catch {
+        setMessage('Failed to load profile data')
+      }
+    }
+
+    fetchProfile()
+  }, [store.userInfo.id, store.token])
+
   return (
     <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-2 mt-5">
       <div className="bg-white p-6 rounded-lg flex items-center shadow-md">
         <div className="flex-shrink-0">
-          {imageUrl ? (
+          {formData.imageUrl ? (
             <img
-              src={imageUrl}
+              src={formData.imageUrl}
               alt="Profile"
               className="w-[150px] h-[150px] rounded-full object-cover"
             />
@@ -149,8 +162,8 @@ const Profile = () => {
           </label>
           <input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formData.name}
+            onChange={handleInputChange}
             className="text-xl font-semibold"
             placeholder="Name"
           />
@@ -159,8 +172,8 @@ const Profile = () => {
           </label>
           <input
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleInputChange}
             className="text-xl font-semibold"
             placeholder="Email"
           />
@@ -199,8 +212,8 @@ const Profile = () => {
                 type="password"
                 id="old_password"
                 name="old_password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
+                value={passwordData.oldPassword}
+                onChange={handlePasswordInputChange}
                 placeholder="Enter Old Passowrd"
                 className="w-full px-3 py-2 mt-2 border border-gray-400 rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition duration-300"
               />
@@ -217,8 +230,8 @@ const Profile = () => {
                 id="new_password"
                 name="new_password"
                 placeholder="Enter New Passowrd"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                value={formData.newPassword}
+                onChange={handlePasswordInputChange}
                 className="w-full px-3 py-2 mt-2 border border-gray-400 rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition duration-300"
               />
             </div>
