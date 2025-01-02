@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 import axios from 'axios'
 import JoditEditor from 'jodit-react'
 import { useContext, useEffect, useRef, useState } from 'react'
@@ -7,39 +9,48 @@ import { Link } from 'react-router-dom'
 import { baseUrl } from '../../config/config'
 import storeContext from '../../context/storeContext'
 import Gallery from '../components/Gallery'
+import InputField from '../components/InputField'
 
 const CreateNews = () => {
   const { store } = useContext(storeContext)
-
-  const [loader, setLoader] = useState(false)
-  const [show, setShow] = useState(false)
   const editor = useRef(null)
-  const [title, setTitle] = useState('')
-  const [image, setImage] = useState('')
-  const [img, setImg] = useState('')
-  const [description, setDescription] = useState('')
+
+  const [newsData, setNewsData] = useState({
+    title: '',
+    description: '',
+    image: null,
+  })
+
+  const [previewImage, setPreviewImage] = useState('')
+  const [loader, setLoader] = useState(false)
+  const [showGallery, setShowGallery] = useState(false)
   const [images, setImages] = useState([])
   const [imagesLoader, setImagesLoader] = useState(false)
 
-  console.log(imagesLoader)
+  const handleInputChange = (event) => {
+    const { name, value } = event.target
 
-  const imageHandle = (e) => {
-    const { files } = e.target
+    setNewsData((prev) => ({ ...prev, [name]: value }))
+  }
 
-    if (files.length > 0) {
-      setImg(URL.createObjectURL(files[0]))
-      setImage(files[0])
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]
+
+    if (file) {
+      setPreviewImage(URL.createObjectURL(file))
+      setNewsData((prev) => ({ ...prev, image: file }))
     }
   }
 
-  const added = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async (event) => {
+    event.preventDefault()
 
     const formData = new FormData()
 
-    formData.append('title', title)
-    formData.append('description', description)
-    formData.append('image', image)
+    formData.append('title', newsData.title)
+    formData.append('description', newsData.description)
+
+    if (newsData.image) formData.append('image', newsData.image)
 
     try {
       setLoader(true)
@@ -50,51 +61,39 @@ const CreateNews = () => {
         },
       })
 
-      setLoader(false)
-
       toast.success(data.message)
 
-      setTitle('')
-      setDescription('')
-      setImage('')
-      setImg('')
+      setNewsData({ title: '', description: '', image: null })
+      setPreviewImage('')
     } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add news.')
+    } finally {
       setLoader(false)
-
-      toast.error(error.response.data.message)
     }
   }
 
-  const get_images = async () => {
+  const fetchImages = async () => {
     try {
       const { data } = await axios.get(`${baseUrl}/api/images`, {
         headers: {
           Authorization: `Bearer ${store.token}`,
         },
       })
-
-      console.log(data.images)
-
       setImages(data.images)
-    } catch (error) {
-      console.log(error)
+    } catch {
+      toast.error('Failed to fetch images.')
     }
   }
 
-  useEffect(() => {
-    get_images()
-  }, [images])
+  const handleMultipleFileUpload = async (event) => {
+    const files = event.target.files
+    const formData = new FormData()
 
-  const imageHandler = async (e) => {
-    const files = e.target.files
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i])
+    }
 
     try {
-      const formData = new FormData()
-
-      for (let i = 0; i < files.length; i++) {
-        formData.append('images', files[i])
-      }
-
       setImagesLoader(true)
 
       const { data } = await axios.post(`${baseUrl}/api/images/add`, formData, {
@@ -103,16 +102,19 @@ const CreateNews = () => {
         },
       })
 
-      setImagesLoader(false)
-      setImages([...images, data.images])
+      setImages((prev) => [...prev, ...data.images])
 
       toast.success(data.message)
-    } catch (error) {
-      console.log(error)
-
+    } catch {
+      toast.error('Failed to upload images.')
+    } finally {
       setImagesLoader(false)
     }
   }
+
+  useEffect(() => {
+    fetchImages()
+  }, [])
 
   return (
     <div className="bg-white shadow-md rounded-md p-6">
@@ -125,32 +127,25 @@ const CreateNews = () => {
           View All
         </Link>
       </div>
-      <form onSubmit={added}>
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-md font-medium text-gray-600 mb-2"
-          >
-            Title
-          </label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            type="text"
-            placeholder="Enter News Title"
-            name="title"
-            id="title"
-            className="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-blue-500 outline-none transition h-10"
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit}>
+        <InputField
+          label="Title"
+          labelClass="block text-md font-medium text-gray-600 mb-2"
+          inputClass="w-full px-4 py-2 border rounded-md border-gray-300 focus:border-blue-500 outline-none transition h-10"
+          type="text"
+          name='title'
+          value={newsData.title}
+          onChange={handleInputChange}
+          placeholder="Enter news title"
+          required={true}
+        />
         <div>
           <label
             htmlFor="img"
             className="w-full h-[240px] flex flex-col items-center justify-center cursor-pointer border-2 border-dashed border-gray-500 rounded-lg text-gray-500 hover:border-blue-500 transition mt-4"
           >
-            {img ? (
-              <img src={img} className="w-full h-full" alt="image" />
+            {previewImage ? (
+              <img src={previewImage} className="w-full h-full" alt="Preview" />
             ) : (
               <div className="flex justify-center items-center flex-col gap-y-2">
                 <FaImages className="text-4xl mb-2" />
@@ -159,7 +154,7 @@ const CreateNews = () => {
             )}
           </label>
           <input
-            onChange={imageHandle}
+            onChange={handleFileChange}
             type="file"
             className="hidden"
             id="img"
@@ -175,7 +170,7 @@ const CreateNews = () => {
               Description{' '}
             </label>
             <div
-              onClick={() => setShow(true)}
+              onClick={() => setShowGallery(true)}
               className="text-blue-500 hover:text-blue-800 cursor-pointer"
             >
               <FaImages className="text-2xl " />
@@ -183,9 +178,11 @@ const CreateNews = () => {
           </div>
           <JoditEditor
             ref={editor}
-            value={description}
+            value={newsData.description}
             tabIndex={1}
-            onBlur={(value) => setDescription(value)}
+            onBlur={(value) =>
+              setNewsData((prev) => ({ ...prev, description: value }))
+            }
             onChange={() => {}}
             className="w-full border border-gray-400 rounded-md"
           />
@@ -200,9 +197,9 @@ const CreateNews = () => {
           </button>
         </div>
       </form>
-      {show && <Gallery setShow={setShow} images={images} />}
+      {showGallery && <Gallery setShow={setShowGallery} images={images} />}
       <input
-        onChange={imageHandler}
+        onChange={handleMultipleFileUpload}
         type="file"
         multiple
         id="images"

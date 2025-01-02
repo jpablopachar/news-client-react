@@ -11,7 +11,7 @@ import Gallery from '../components/Gallery'
 const EditNews = () => {
   const { store } = useContext(storeContext)
 
-  const { news_id } = useParams()
+  const { newsId } = useParams()
 
   const editor = useRef(null)
 
@@ -21,7 +21,7 @@ const EditNews = () => {
   const [image, setImage] = useState('')
   const [img, setImg] = useState('')
   const [description, setDescription] = useState('')
-  const [old_image, set_old_image] = useState('')
+  const [oldImage, setOldImage] = useState('')
   const [images, setImages] = useState([])
   const [imagesLoader, setImagesLoader] = useState(false)
 
@@ -44,12 +44,12 @@ const EditNews = () => {
     formData.append('title', title)
     formData.append('description', description)
     formData.append('new_image', image)
-    formData.append('old_image', old_image)
+    formData.append('old_image', oldImage)
 
     try {
       setLoader(true)
       const { data } = await axios.put(
-        `${baseUrl}/api/news/update/${news_id}`,
+        `${baseUrl}/api/news/update/${newsId}`,
         formData,
         {
           headers: {
@@ -118,7 +118,7 @@ const EditNews = () => {
 
   const get_edit_news = async () => {
     try {
-      const { data } = await axios.get(`${baseUrl}/api/edit/news/${news_id}`, {
+      const { data } = await axios.get(`${baseUrl}/api/edit/news/${newsId}`, {
         headers: {
           Authorization: `Bearer ${store.token}`,
         },
@@ -127,7 +127,7 @@ const EditNews = () => {
       setTitle(data?.news?.title)
       setDescription(data?.news?.description)
       setImg(data?.news?.image)
-      set_old_image(data?.news?.image)
+      setOldImage(data?.news?.image)
     } catch (error) {
       console.log(error)
     }
@@ -135,7 +135,7 @@ const EditNews = () => {
 
   useEffect(() => {
     get_edit_news()
-  }, [news_id])
+  }, [newsId])
 
   return (
     <div className="bg-white shadow-md rounded-md p-6">
