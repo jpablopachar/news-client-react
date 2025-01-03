@@ -9,7 +9,7 @@ export const WRITER_CATEGORIES = {
 }
 
 export const NEWS_STATUS = {
-  PENDING: 'Pending',
-  ACTIVE: 'Active',
-  DEACTIVE: 'Deactive',
+  PENDING: 'pending',
+  ACTIVE: 'active',
+  DEACTIVE: 'deactive',
 }
